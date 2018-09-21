@@ -1,0 +1,31 @@
+#TouhouDanmakufu[Plural]
+#ScriptVersion[3]
+#Title["Princess Peach Script"]
+#Text["Peach Spell Cards"]
+#Background["script/Peach/Peach Background.txt"]
+
+@Initialize {
+	Plural;
+}
+
+@MainLoop {
+	yield;
+}
+
+@Finalize {
+	
+}
+
+task Plural {
+	let dir = GetCurrentScriptDirectory;
+	
+	// Call boss stuff under here
+	let obj = ObjEnemyBossSceneCreate();
+	//ObjEnemyBossScene_Add(obj, 0, dir ~ "[PATH HERE]");
+	
+	while (!Obj_IsDeleted(obj) {
+		yield;
+	}
+	
+	CloseScript(GetOwnScriptID());
+}

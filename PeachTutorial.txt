@@ -1,0 +1,164 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Peach Tutorial"]
+#Text["Tutorial stuff"]
+#Background["script/Peach/Peach Background.txt"]
+
+let bossObj;
+let bossX = 0;
+let bossY = 0;
+
+#include "script/default_system/Default_ShotConst.txt"
+
+@Initialize {
+	// intializes bossObj and registers it
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	
+	ObjMove_SetPosition(bossObj, 192, -100);
+	
+	ObjMove_SetDestAtSpeed(bossObj, 192, 120, 5);
+	
+	CloseBoss;
+	MainTask;
+}
+
+@Event {
+	alternative(GetEventType())
+	case (EV_REQUEST_LIFE) {
+		SetScriptResult(1500);
+	}
+	case(EV_REQUEST_TIMER) {
+		SetScriptResult(60);
+	}
+	case(EV_REQUEST_SPELL_SCORE) {
+		SetScriptResult(1000000);
+	}
+}
+
+@MainLoop {
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+	
+	ObjEnemy_SetIntersectionCircleToShot(bossObj, bossX, bossY, 24);
+	ObjEnemy_SetIntersectionCircleToPlayer(bossObj, bossX, bossY, 32);
+	
+	yield;
+}
+
+task MainTask {
+	RenderBoss;
+	Movement;
+}
+
+// Delay before shot fire
+function wait(w) {
+	loop(w) {
+		yield;
+	}
+}
+
+task RenderBoss {
+	let dir;
+	let speed;
+	
+	let imgBoss = GetCurrentScriptDirectory ~ "dream team peach idle.png";
+	
+	let animFrame = 0;
+	
+	ObjPrim_SetTexture(bossObj, imgBoss);
+	ObjSprite2D_SetSourceRect(bossObj, 0, 97, 64, 194); // (x1, y1, x2, y2)
+	ObjSprite2D_SetDestCenter(bossObj);
+	ObjRender_SetScaleXYZ(bossObj, 0.8, 0.8, 0);
+	
+	while (!Obj_IsDeleted(bossObj)) {
+		dir = ObjMove_GetAngle(bossObj);
+		speed = ObjMove_GetSpeed(bossObj);
+		
+		// Animating Peach
+		if (speed == 0) {
+			ObjSprite2D_SetSourceRect(bossObj, 0 + 64*floor(animFrame / 4), 97, 64 + 64*floor(animFrame / 4), 194);
+			animFrame++;
+			if (animFrame >= 32) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		else if (cos(dir) < 0 ) {
+			ObjSprite2D_SetSourceRect(bossObj, 0 + 64*floor(animFrame/4), 194, 64 + 64*floor(animFrame/4), 291);
+			animFrame++;
+			if (animFrame >= 32) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		
+		else if (cos(dir) > 0) {
+			ObjSprite2D_SetSourceRect(bossObj, 0 + 64*floor(animFrame / 4), 0, 64 + 64*floor(animFrame/4), 97);
+			animFrame++;
+			if (animFrame >= 32) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		
+		yield;
+	}
+}
+
+task CloseBoss {
+	while (ObjEnemy_GetInfo(bossObj, INFO_LIFE) > 0) {
+		yield;
+	}
+	Obj_Delete(bossObj);
+	DeleteShotAll(TYPE_ALL, TYPE_IMMEDIATE);
+	SetAutoDeleteObject(true);
+	CloseScript(GetOwnScriptID);
+	return;
+}
+
+task Fire {
+	// Fires a barrage of single homing bullets
+	loop(10) {
+		let playerAngle = GetAngleToPlayer(bossObj);
+		CreateShotA1(bossX, bossY, 3, playerAngle, 206, 20); 
+		// CreateShotA1 (x, y, speed, angle, bullet type, delay);
+		wait(5); // Pause between each bullet spawn
+	}
+}
+
+task FireRing {
+	// Fires a ring of bullets
+	let angle = 0;
+	loop(30) {
+		CreateShotA1(bossX + cos(angle), bossY + sin(angle), 3, angle, 206, 0);
+		angle += 360/30;
+	}
+}
+
+task FireParametric {
+	// Randomly spawns multiple bullets that slowly accelerate
+	let angle = rand(0, 360);
+	loop (60) {
+		loop(3) {
+			CreateShotA2(bossX + 120*cos(angle * 3), bossY + 90*sin(angle * 5), 0, angle * 3, 0.005, 2, 206, 10);
+			angle += 360/3;
+		}
+		angle += 7;
+		yield;
+	}
+}
+
+task Movement {
+	wait(45);
+	loop {
+		ObjMove_SetDestAtSpeed(bossObj, 100, 120, 3);
+		wait(45);
+		Fire;
+		wait(45);
+		ObjMove_SetDestAtSpeed(bossObj, 280, 120, 5);
+		wait(45);
+		Fire;
+		wait(45);
+	}
+}

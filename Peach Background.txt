@@ -1,0 +1,117 @@
+let dir = GetCurrentScriptDirectory;
+
+let floorTex = dir ~ "floor.png";
+let wallTex = dir ~ "wall.png";
+let fogBG = dir ~ "fog.png";
+
+@Initialize {
+	RenderStage;
+	ScrollStage;
+}
+
+@MainLoop {
+	yield;
+}
+
+@Finalize {
+	
+}
+
+// ===== Tasks =====
+
+// sets up and renders the stage
+task RenderStage {
+		SetFogEnable(true);
+		SetFogParam(1024, 1536, 255, 255, 236); // set fog color
+		makeFog(0, 0, 2048, 255, 255, 236);
+		
+		makeFloor(0, 0, 1536);
+		makeFloor(0, 0, 1024);
+		makeFloor(0, 0, 512);
+		makeFloor(0, 0, 0);
+		
+		makeWall(-256, 256, 1536);
+		makeWall(-256, 256, 1024);
+		makeWall(-256, 256, 512);
+		makeWall(-256, 256, 0);
+		
+		makeWall(256, 256, 1536);
+		makeWall(256, 256, 1024);
+		makeWall(256, 256, 512);
+		makeWall(256, 256, 0);
+}
+
+task ScrollStage {
+		let scroll = 0;
+		
+		SetCameraPerspectiveClip(16, 4096);
+		
+		SetCameraAzimuthAngle(-90);
+		SetCameraElevationAngle(15);
+		SetCameraRadius(16);
+		SetCameraFocusX(0); // horizontal movement
+		SetCameraFocusY(256); // vertical movement 
+		SetCameraFocusZ(-512); // depth
+		
+		loop {
+			SetCameraFocusZ(-512 + scroll);
+			if (scroll > 512) {
+				scroll = 0;
+			}
+			
+			scroll+=2;
+			
+			yield;
+		}
+}
+
+// ===== Functions =====
+
+/* Despite makeFloor and makeWall sharing almost exactly the same code,
+* I decided on refraining from creating one shared function to prevent confusion
+* and makes things much easier to read!
+* also the tutorial said to do this shit i'm fuckin lazy dude
+*/
+
+// makes one (1) floor piece
+function makeFloor(locX, locY, locZ) {
+	let obj = ObjPrim_Create(OBJ_SPRITE_3D);
+	ObjPrim_SetTexture(obj, floorTex);
+	Obj_SetRenderPriorityI(obj, 20);
+	ObjSprite3D_SetSourceDestRect(obj, 0, 0, 512, 512);
+	ObjRender_SetScaleXYZ(obj, 1, 1, 0);
+	ObjRender_SetZWrite(obj, true);
+	
+	ObjRender_SetAngleXYZ(obj, 90, 0, 0);
+	
+	ObjRender_SetPosition(obj, locX, locY, locZ);
+}
+
+// makes one (1) wall piece
+function makeWall(locX, locY, locZ) {
+	let obj = ObjPrim_Create(OBJ_SPRITE_3D);
+	ObjPrim_SetTexture(obj, wallTex);
+	Obj_SetRenderPriorityI(obj, 20);
+	ObjSprite3D_SetSourceDestRect(obj, 0, 0, 512, 512);
+	ObjRender_SetScaleXYZ(obj, 1, 1, 0);
+	ObjRender_SetZWrite(obj, true);
+	
+	ObjRender_SetAngleXYZ(obj, 0, 90, 180);
+	
+	ObjRender_SetPosition(obj, locX, locY, locZ);
+}
+
+function makeFog(locX, locY, locZ, red, green, blue) {
+	let obj = ObjPrim_Create(OBJ_SPRITE_3D);
+	ObjPrim_SetTexture(obj, fogBG);
+	Obj_SetRenderPriorityI(obj, 20);
+	ObjSprite3D_SetSourceDestRect(obj, 0, 0, 4096, 4096);
+	ObjRender_SetScaleXYZ(obj, 1, 1, 0);
+	ObjRender_SetZWrite(obj, true);
+	
+	ObjRender_SetPosition(obj, locX, locY, locZ);
+	
+	ObjRender_SetColor(obj, red, green, blue);
+	
+	ObjSprite3D_SetBillboard(obj, true);
+}
