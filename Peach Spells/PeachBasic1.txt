@@ -1,0 +1,133 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Peach Basic Pattern 1"]
+#Text["TESTING BASIC PATTERN 1"]
+#Background["script/Peach/Peach Background.txt"]
+// REMOVE HEADER ONCE DONE TESTING
+// A simple basic spell card by Peach utilizing ? and ? to get the player comfortable.
+
+let directory = GetCurrentScriptDirectory;
+
+let bossObj;
+let bossX = 0;
+let bossY = 0;
+
+#include "/script/ZUNShot/ZUNShot_Const.txt"
+// Instead of using the default bullets, I will use a custom bullet.
+
+@Initialize {
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() / 2, 60, 60);
+	
+	TRenderBoss;
+	TMovement;
+}
+
+@Event {
+	alternative(GetEventType())
+	case (EV_REQUEST_LIFE) {
+		SetScriptResult(700);
+	}
+	
+	case (EV_REQUEST_TIMER) {
+		SetScriptResult(60);
+	}
+	
+}
+
+@MainLoop {
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+	
+	ObjEnemy_SetIntersectionCircleToShot(bossObj, bossX, bossY, 24);
+	ObjEnemy_SetIntersectionCircleToPlayer(bossObj, bossX, bossY, 32);
+	
+	yield;
+}
+
+@Finalize {
+
+}
+
+// ===== Functions =====
+
+function wait(w) {
+	loop(w) {
+		yield;
+	}
+}
+
+// ===== Tasks ======
+
+task TRenderBoss {
+	let dir;
+	let speed;
+	
+	let peachTexture = directory ~ "dream team peach idle.png";
+	
+	let animFrame = 0;
+	
+	ObjPrim_SetTexture(bossObj, peachTexture); // Sets the boss object's texture to Peach
+	ObjSprite2D_SetSourceRect(bossObj, 0, 97, 64, 194); // (x1, y1, x2, y2)
+	ObjSprite2D_SetDestCenter(bossObj);
+	ObjRender_SetScaleXYZ(bossObj, 0.8, 0.8, 0);
+	
+	while (!Obj_IsDeleted(bossObj)) {
+		dir = ObjMove_GetAngle(bossObj);
+		speed = ObjMove_GetSpeed(bossObj);
+		
+		// Animating Peach
+		/* The first if statement checks to see if Peach is moving
+		* speed == 0 shows that she isn't moving, and thus animates her idle pose.
+		*/
+		if (speed == 0) {
+			ObjSprite2D_SetSourceRect(bossObj, 0 + 64*floor(animFrame / 4), 97, 64 + 64*floor(animFrame / 4), 194);
+			animFrame++;
+			if (animFrame >= 32) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		/* The second if statement checks to see if Peach is moving to the left of the screen
+		* The cos(dir) will return a negative value if she is on the left side of the screen.
+		*/
+		else if (cos(dir) < 0 ) {
+			ObjSprite2D_SetSourceRect(bossObj, 0 + 64*floor(animFrame/4), 194, 64 + 64*floor(animFrame/4), 291);
+			animFrame++;
+			if (animFrame >= 32) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		/* Same as above, but instead of cosine returning negative, it will return positive.
+		*/
+		else if (cos(dir) > 0) {
+			ObjSprite2D_SetSourceRect(bossObj, 0 + 64*floor(animFrame / 4), 0, 64 + 64*floor(animFrame/4), 97);
+			animFrame++;
+			if (animFrame >= 32) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		
+		yield;
+	}
+}
+
+task TMovement {
+	wait(70);
+	loop {
+		TFire(0, 384);
+		wait(25);
+		TFire(90, 385);
+		wait(25);
+	}
+}
+
+task TFire(angle, shotID){
+	loop(30) { // Loop and angle divisor determines amount of bullets fired in the heart formation
+		CreateShotA1(bossX + cos(angle), bossY + sin(angle), 3, angle, shotID, 1);
+		angle += 360/30;
+	}
+}
