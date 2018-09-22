@@ -1,0 +1,93 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Peach Basic Pattern 2"]
+#Text["TESTING BASIC PATTERN 2"]
+#Background["script/Peach/Peach Background.txt"]
+
+#include "../ZUNShot/ZUNShot_Const.txt"
+#include "./[library] boss.txt"
+
+let bossObj;
+let atkSE = scriptDir ~ "se_tan00.wav";
+
+@Initialize {
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() / 2, 120, 60);
+	
+	TRenderBoss;
+	TFireBarrageRed;
+	TFireBarrageBlue;
+	TMovement;
+	TEnd;
+}
+
+@Loading {
+	LoadSound(atkSE);
+}
+
+@Event {
+	alternative(GetEventType())
+	case (EV_REQUEST_LIFE) {
+		SetScriptResult(800);
+	}
+	
+	case (EV_REQUEST_TIMER) {
+		SetScriptResult(60);
+	}
+}
+
+@Finalize {
+	
+}
+
+// ===== Functions ======
+
+// ===== Tasks ======
+
+task TMovement {
+	let cx = GetStgFrameWidth() / 2;
+	
+	loop {
+		wait(120);
+		ObjMove_SetDestAtSpeed(bossObj, rand(cx - 30, cx + 30), rand(60, 120), 1);
+	}
+}
+
+task TFireBarrageRed {
+	let angle = 0;
+	let delay = 1;
+	
+	wait(70);
+	while(ObjEnemy_GetInfo(bossObj, INFO_LIFE) > 0) {
+		ascent (i in 0 .. 4) {
+			TFire(2, angle, 92, 1);
+			PlaySE(atkSE);
+			angle += 45;
+			delay += 1;
+			wait(10);
+		}
+	}
+}
+
+task TFireBarrageBlue {
+	let angle = 360;
+	let delay = 1;
+	
+	wait(70);
+	while(ObjEnemy_GetInfo(bossObj, INFO_LIFE) > 0) {
+		ascent (i in 0 .. 4) {
+			TFire(2, angle, 96, 1);
+			angle -= 45;
+			delay += 2;
+			wait(10);
+		}
+	}
+}
+
+task TFire (speed, angle, shotID, delay) {
+	loop (15) {
+		CreateShotA1(bossX + cos(angle), bossY +sin(angle), speed, angle, shotID, delay);
+		angle += 360/15;
+	}
+}

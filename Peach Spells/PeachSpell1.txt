@@ -32,7 +32,7 @@ let bossObj;
 @Event {
 	alternative(GetEventType())
 	case (EV_REQUEST_LIFE()) {
-		SetScriptResult(300);
+		SetScriptResult(500);
 	}
 	
 	case(EV_REQUEST_TIMER()) {
@@ -67,7 +67,9 @@ task TRainLoop {
 
 // Fires 4 waves of 15 small bullets that home in on the player, then moves
 task TCircleLoop {
-	while(!Obj_IsDeleted(bossObj)) {
+	let cx = GetStgFrameWidth() / 2;
+	wait(120);
+	while(ObjEnemy_GetInfo(bossObj, INFO_LIFE) > 0) {
 		wait(80);
 		TIceShot(0, -0.1, -1, 1);
 		PlaySE(atk2SE);
@@ -81,7 +83,7 @@ task TCircleLoop {
 		TIceShot(135, -0.1, -1, 5);
 		PlaySE(atk2SE);
 		wait(8);
-		ObjMove_SetDestAtSpeed(bossObj, rand(40, GetStgFrameWidth() - 40), rand(40, 120), 2);
+		ObjMove_SetDestAtSpeed(bossObj, rand(cx - 30, cx + 30), rand(60, 120), 2);
 	}
 }
 
@@ -96,6 +98,7 @@ task TIceShot (angle, accel, minSpeed, delay) {
 	}
 }
 
+// Creates cascading rows of hearts
 task THeartShot (num, id) {
 	loop(20) {
 		CreateShotA1(0 + num, 0, 2, 90, id, 2);

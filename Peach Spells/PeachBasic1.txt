@@ -52,7 +52,7 @@ let bossObj;
 
 task TFireLoop {
 	wait(70);
-	while (!Obj_IsDeleted(bossObj)) {
+	while (ObjEnemy_GetInfo(bossObj, INFO_LIFE) > 0) {
 		TFire(1, 0, 92);
 		PlaySE(se);
 		wait(18);
@@ -67,9 +67,10 @@ task TFireLoop {
 }
 
 task TMovement {
+	let cx = GetStgFrameWidth() / 2;
 	loop {
 		wait(120);
-		ObjMove_SetDestAtSpeed(bossObj, rand(0, GetStgFrameWidth()), rand(40, 120), 1);
+		ObjMove_SetDestAtSpeed(bossObj, rand(cx - 30, cx + 30), rand(60, 120), 1);
 	}
 }
 
