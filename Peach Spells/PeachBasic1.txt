@@ -12,8 +12,6 @@
 let se = scriptDir ~ "se_tan00.wav";
 
 let bossObj;
-let bossX = 0;
-let bossY = 0;
 
 // Instead of using the default bullets, I will use a custom bullet.
 
@@ -21,11 +19,15 @@ let bossY = 0;
 	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
 	ObjEnemy_Regist(bossObj);
 	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() / 2, 120, 60);
-	LoadSound(se);
 	
 	TRenderBoss;
 	TFireLoop;
 	TMovement;
+	TEnd;
+}
+
+@Loading {
+	LoadSound(se);
 }
 
 @Event {
@@ -40,33 +42,17 @@ let bossY = 0;
 	
 }
 
-@MainLoop {
-	bossX = ObjMove_GetX(bossObj);
-	bossY = ObjMove_GetY(bossObj);
-	
-	ObjEnemy_SetIntersectionCircleToShot(bossObj, bossX, bossY, 24);
-	ObjEnemy_SetIntersectionCircleToPlayer(bossObj, bossX, bossY, 32);
-	
-	yield;
-}
-
 @Finalize {
 
 }
 
 // ===== Functions =====
 
-function wait(w) {
-	loop(w) {
-		yield;
-	}
-}
-
 // ===== Tasks ======
 
 task TFireLoop {
 	wait(70);
-	while (!Obj_IsDeleted(bossObj) {
+	while (!Obj_IsDeleted(bossObj)) {
 		TFire(1, 0, 92);
 		PlaySE(se);
 		wait(18);

@@ -1,8 +1,34 @@
+#include "script/Cutin/Cutin.txt"
+#include "script/default_system/Default_Effect.txt"
+
 let scriptDir = GetCurrentScriptDirectory;
 let cut = scriptDir ~ "Peach Cutin.png";
 let objScene = GetEnemyBossSceneObjectID();
 let spellStartSE = scriptDir ~ "se_cat00.wav";
 let spellActive = false;
+
+let bossX = 0;
+let bossY = 0;
+
+@MainLoop {
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+	
+	ObjEnemy_SetIntersectionCircleToShot(bossObj, bossX, bossY, 24);
+	ObjEnemy_SetIntersectionCircleToPlayer(bossObj, bossX, bossY, 32);
+	
+	yield;
+}
+
+// ===== Functions =====
+
+function wait(w) {
+	loop(w) {
+		yield;
+	}
+}
+
+// ===== Tasks =====
 
 task TRenderBoss {
 	let dir;
@@ -106,5 +132,21 @@ task TCutIn {
 	LoadSound(spellStartSE);
 	PlaySE(spellStartSE);
 	TSpellBackground;
-	cutin(BYAKUREN, cut, 0, 0, 571, 778);
+	ObjCutin_SetSpellcardS4("Love Sign \"Raining Love\"", cut, BYAKUREN, 249, 134, 237);
+	ObjCutin_LaunchS3(BYAKUREN, cut, "Normal");
+	//cutin(BYAKUREN, cut, 0, 0, 571, 778);
+}
+
+task TEnd {
+	while (ObjEnemy_GetInfo(bossObj, INFO_LIFE) > 0) {
+		yield;
+	}
+	
+	TExplosionA(bossX, bossY, 10, 0.6);
+	Obj_Delete(bossObj);
+	DeleteShotAll(TYPE_ALL, TYPE_ITEM);
+	
+	wait(30);
+	
+	CloseScript(GetOwnScriptID());
 }

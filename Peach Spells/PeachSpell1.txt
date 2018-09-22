@@ -5,25 +5,28 @@
 #Background["script/Peach/Peach Background.txt"]
 
 #include "/script/Peach/ZUNShot/ZUNShot_Const.txt"
-#include "/script/Spell Cut In/function_cutin.txt"
 #include "./[library] boss.txt"
 
 let atk1SE = scriptDir ~ "se_tan02.wav"; // Calls sound effect for raining hearts
+let atk2SE = scriptDir ~ "se_kira00.wav"; // Calls sound effect for circles
 
 let bossObj;
-let bossX = 0;
-let bossY = 0;
 
 @Initialize {
 	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
 	ObjEnemy_Regist(bossObj);
 	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() / 2, 120, 60);
-	LoadSound(atk1SE);
 	
 	TRenderBoss;
 	TCutIn;
 	TRainLoop;
 	TCircleLoop;
+	TEnd;
+}
+
+@Loading {
+	LoadSound(atk1SE);
+	LoadSound(atk2SE);
 }
 
 @Event {
@@ -41,23 +44,11 @@ let bossY = 0;
 	}
 }
 
-@MainLoop {
-	bossX = ObjMove_GetX(bossObj);
-	bossY = ObjMove_GetY(bossObj);
-	
-	yield;
-}
-
 @Finalize {
 	
 }
 
 // ===== Functions =====
-function wait(w) {
-	loop(w) {
-		yield;
-	}
-}
 
 // ===== Tasks ======
 
@@ -74,32 +65,40 @@ task TRainLoop {
 	}
 }
 
+// Fires 4 waves of 15 small bullets that home in on the player, then moves
 task TCircleLoop {
 	while(!Obj_IsDeleted(bossObj)) {
-		TIceShot(-0.1, -1);
+		wait(80);
+		TIceShot(0, -0.1, -1, 1);
+		PlaySE(atk2SE);
+		wait(8);
+		TIceShot(45, -0.1, -1, 3);
+		PlaySE(atk2SE);
+		wait(8);
+		TIceShot(90, -0.1, -1, 5);
+		PlaySE(atk2SE);
+		wait(8);
+		TIceShot(135, -0.1, -1, 5);
+		PlaySE(atk2SE);
+		wait(8);
+		ObjMove_SetDestAtSpeed(bossObj, rand(40, GetStgFrameWidth() - 40), rand(40, 120), 2);
 	}
 }
 
 // Takes in acceleration and negative speed for parameters
-task TIceShot (accel, minSpeed) {
-	let angle = 0;
-	let obj = [];
-	let i = 0;
-	while (i < 20) {
-		obj = obj ~ [CreateShotA2(bossX + cos(angle), bossY + sin(angle), 1, angle, accel, minSpeed, 140, 1.5)];
-		angle += 360/20;
-		i++;
-	}
-	wait(60);
-	ascent(i in 0 .. 20) {
-		if (Obj_IsDeleted(obj[i])) { yield; }
-		ObjMove_AddPatternA4(obj[i], 30, 1, 0, 0.1, 1, 0, GetPlayerObjectID(), 139);
+task TIceShot (angle, accel, minSpeed, delay) {
+	let obj;
+	
+	loop (15) {
+		obj = CreateShotA2(bossX + cos(angle), bossY + sin(angle), 5, angle, accel, minSpeed, 60, delay);
+		ObjMove_AddPatternA4(obj, 60, 1, 0, 0.1, 0, 2, GetPlayerObjectID(), 64);
+		angle += 360/15;
 	}
 }
 
 task THeartShot (num, id) {
 	loop(20) {
-		CreateShotA1(0 + num, -30, 2, 90, id, 0);
+		CreateShotA1(0 + num, 0, 2, 90, id, 2);
 		num += 55;
 	}
 }

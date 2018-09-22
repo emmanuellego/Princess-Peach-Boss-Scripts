@@ -21,7 +21,10 @@ task TPlural {
 	
 	// Call boss stuff under here
 	let obj = ObjEnemyBossScene_Create();
-	ObjEnemyBossScene_Add(obj, 0, dir ~ "\Peach Spells\PeachBasic1.txt");
+	ObjEnemyBossScene_Add(obj, 0, dir ~ "Peach Spells/PeachBasic1.txt");
+	ObjEnemyBossScene_Add(obj, 0, dir ~ "Peach Spells/PeachSpell1.txt");
+	ObjEnemyBossScene_LoadInThread(obj);
+	ObjEnemyBossScene_Regist(obj);
 	
 	while (!Obj_IsDeleted(obj)) {
 		yield;
