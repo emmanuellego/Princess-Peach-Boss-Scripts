@@ -1,0 +1,110 @@
+let scriptDir = GetCurrentScriptDirectory;
+let cut = scriptDir ~ "Peach Cutin.png";
+let objScene = GetEnemyBossSceneObjectID();
+let spellStartSE = scriptDir ~ "se_cat00.wav";
+let spellActive = false;
+
+task TRenderBoss {
+	let dir;
+	let speed;
+	
+	let peachTexture = scriptDir ~ "dream team peach idle.png";
+	
+	let animFrame = 0;
+	
+	ObjPrim_SetTexture(bossObj, peachTexture); // Sets the boss object's texture to Peach
+	ObjSprite2D_SetSourceRect(bossObj, 0, 97, 64, 194); // (x1, y1, x2, y2);
+	ObjSprite2D_SetDestCenter(bossObj);
+	Obj_SetRenderPriority(bossObj, 0.21);
+	ObjRender_SetScaleXYZ(bossObj, 0.8, 0.8, 0);
+	
+	while (!Obj_IsDeleted(bossObj)) {
+		dir = ObjMove_GetAngle(bossObj);
+		speed = ObjMove_GetSpeed(bossObj);
+		
+		// Animating Peach
+		/* The first if statement checks to see if Peach is moving
+		* speed == 0 shows that she isn't moving, and thus animates her idle pose.
+		*/
+		if (speed == 0) {
+			ObjSprite2D_SetSourceRect(bossObj, 0 + 64*floor(animFrame / 4), 97, 64 + 64*floor(animFrame / 4), 194);
+			animFrame++;
+			if (animFrame >= 32) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		/* The second if statement checks to see if Peach is moving to the left of the screen
+		* The cos(dir) will return a negative value if she is on the left side of the screen.
+		*/
+		else if (cos(dir) < 0 ) {
+			ObjSprite2D_SetSourceRect(bossObj, 0 + 64*floor(animFrame/4), 194, 64 + 64*floor(animFrame/4), 291);
+			animFrame++;
+			if (animFrame >= 32) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		/* Same as above, but instead of cosine returning negative, it will return positive.
+		*/
+		else if (cos(dir) > 0) {
+			ObjSprite2D_SetSourceRect(bossObj, 0 + 64*floor(animFrame / 4), 0, 64 + 64*floor(animFrame/4), 97);
+			animFrame++;
+			if (animFrame >= 32) {
+				animFrame = 0;
+			}
+			yield;
+		}
+		
+		yield;
+	}
+}
+
+task TSpellBackground {
+	let path1 = scriptDir ~ "peach's castle.png";
+	let path2 = scriptDir ~ "bg petals.png";
+	
+	let obj1 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(obj1, BLEND_ALPHA);
+	Obj_SetRenderPriority(obj1, 0.20);
+	ObjPrim_SetTexture(obj1, path1);
+	ObjSprite2D_SetSourceRect(obj1, 0, 0, 512, 512);
+	ObjSprite2D_SetDestRect(obj1, -256, -256, 256, 256);
+	ObjRender_SetPosition(obj1, 166, 200, 1);
+	
+	let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(obj2, BLEND_ALPHA);
+	Obj_SetRenderPriority(obj2, 0.20);
+	ObjPrim_SetTexture(obj2, path2);
+	ObjSprite2D_SetSourceRect(obj2, 0, 0, 512, 512);
+	ObjSprite2D_SetDestRect(obj2, -256, -256, 256, 256);
+	ObjRender_SetPosition(obj2, 166, 200, 1);
+	
+	let frame = 0;
+	let alpha = 0;
+	
+	loop {
+		if (spellActive) {
+			alpha = 255;
+		}
+		else {
+			alpha = 0;
+		}
+		
+		Obj_SetVisible(obj1, alpha > 0);
+		Obj_SetVisible(obj2, alpha > 0);
+        ObjSprite2D_SetSourceRect(obj2, 0 + (frame*2) % 512, 0 + (frame*2) % 512, 512 + (frame*2) % 512, 512 + (frame*2) % 512);
+		
+		frame+=2;
+		yield;
+	}
+}
+
+task TCutIn {
+	wait(80);
+	spellActive = true;
+	LoadSound(spellStartSE);
+	PlaySE(spellStartSE);
+	TSpellBackground;
+	cutin(BYAKUREN, cut, 0, 0, 571, 778);
+}

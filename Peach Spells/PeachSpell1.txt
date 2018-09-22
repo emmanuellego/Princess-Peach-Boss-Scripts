@@ -1,0 +1,105 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Peach Spell Card 1"]
+#Text["TESTING SPELL PATTERN 1"]
+#Background["script/Peach/Peach Background.txt"]
+
+#include "/script/Peach/ZUNShot/ZUNShot_Const.txt"
+#include "/script/Spell Cut In/function_cutin.txt"
+#include "./[library] boss.txt"
+
+let atk1SE = scriptDir ~ "se_tan02.wav"; // Calls sound effect for raining hearts
+
+let bossObj;
+let bossX = 0;
+let bossY = 0;
+
+@Initialize {
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() / 2, 120, 60);
+	LoadSound(atk1SE);
+	
+	TRenderBoss;
+	TCutIn;
+	TRainLoop;
+	TCircleLoop;
+}
+
+@Event {
+	alternative(GetEventType())
+	case (EV_REQUEST_LIFE()) {
+		SetScriptResult(300);
+	}
+	
+	case(EV_REQUEST_TIMER()) {
+		SetScriptResult(60);
+	}
+	
+	case(EV_REQUEST_SPELL_SCORE()) {
+		SetScriptResult(1500000);
+	}
+}
+
+@MainLoop {
+	bossX = ObjMove_GetX(bossObj);
+	bossY = ObjMove_GetY(bossObj);
+	
+	yield;
+}
+
+@Finalize {
+	
+}
+
+// ===== Functions =====
+function wait(w) {
+	loop(w) {
+		yield;
+	}
+}
+
+// ===== Tasks ======
+
+// Fires a rain of red and blue hearts from the top border.
+task TRainLoop {
+	wait(180);
+	while (!Obj_IsDeleted(bossObj)) {
+		THeartShot(-110, 384);
+		PlaySE(atk1SE);
+		wait(35);
+		THeartShot(-25, 386);
+		PlaySE(atk1SE);
+		wait(35);
+	}
+}
+
+task TCircleLoop {
+	while(!Obj_IsDeleted(bossObj)) {
+		TIceShot(-0.1, -1);
+	}
+}
+
+// Takes in acceleration and negative speed for parameters
+task TIceShot (accel, minSpeed) {
+	let angle = 0;
+	let obj = [];
+	let i = 0;
+	while (i < 20) {
+		obj = obj ~ [CreateShotA2(bossX + cos(angle), bossY + sin(angle), 1, angle, accel, minSpeed, 140, 1.5)];
+		angle += 360/20;
+		i++;
+	}
+	wait(60);
+	ascent(i in 0 .. 20) {
+		if (Obj_IsDeleted(obj[i])) { yield; }
+		ObjMove_AddPatternA4(obj[i], 30, 1, 0, 0.1, 1, 0, GetPlayerObjectID(), 139);
+	}
+}
+
+task THeartShot (num, id) {
+	loop(20) {
+		CreateShotA1(0 + num, -30, 2, 90, id, 0);
+		num += 55;
+	}
+}

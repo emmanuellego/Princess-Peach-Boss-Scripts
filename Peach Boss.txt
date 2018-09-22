@@ -5,7 +5,7 @@
 #Background["script/Peach/Peach Background.txt"]
 
 @Initialize {
-	Plural;
+	TPlural;
 }
 
 @MainLoop {
@@ -16,14 +16,14 @@
 	
 }
 
-task Plural {
+task TPlural {
 	let dir = GetCurrentScriptDirectory;
 	
 	// Call boss stuff under here
-	let obj = ObjEnemyBossSceneCreate();
-	//ObjEnemyBossScene_Add(obj, 0, dir ~ "[PATH HERE]");
+	let obj = ObjEnemyBossScene_Create();
+	ObjEnemyBossScene_Add(obj, 0, dir ~ "\Peach Spells\PeachBasic1.txt");
 	
-	while (!Obj_IsDeleted(obj) {
+	while (!Obj_IsDeleted(obj)) {
 		yield;
 	}
 	
