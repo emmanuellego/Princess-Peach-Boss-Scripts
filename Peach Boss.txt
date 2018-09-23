@@ -4,6 +4,11 @@
 #Text["Peach Spell Cards"]
 #Background["script/Peach/Peach Background.txt"]
 
+let scriptDir = GetCurrentScriptDirectory();
+
+let bgmObj;
+let bgmSound = scriptDir ~ "/Peach Spells/bgm.ogg";
+
 @Initialize {
 	TPlural;
 }
@@ -16,14 +21,27 @@
 	
 }
 
+function createTrack(obj) {
+	ObjSound_SetSoundDivision(obj, SOUND_BGM);
+	ObjSound_SetRestartEnable(obj, true);
+	ObjSound_SetLoopEnable(obj, true);
+	ObjSound_SetLoopTime(obj, 10.35, 77);
+	return obj;
+}
+
 task TPlural {
 	let dir = GetCurrentScriptDirectory;
+	
+	bgmObj = ObjSound_Create();
+	ObjSound_Load(bgmObj, bgmSound);
+	createTrack(bgmObj);
+	ObjSound_Play(bgmObj);
 	
 	// Call boss stuff under here
 	let obj = ObjEnemyBossScene_Create();
 	ObjEnemyBossScene_Add(obj, 0, dir ~ "Peach Spells/PeachBasic1.txt");
 	ObjEnemyBossScene_Add(obj, 0, dir ~ "Peach Spells/PeachSpell1.txt");
-	ObjEnemyBossScene_Add(obj, 0, dir ~ "Peach Spells/PeachBasic2.txt");
+	ObjEnemyBossScene_Add(obj, 1, dir ~ "Peach Spells/PeachBasic2.txt");
 	ObjEnemyBossScene_LoadInThread(obj);
 	ObjEnemyBossScene_Regist(obj);
 	

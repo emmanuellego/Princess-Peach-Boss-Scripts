@@ -32,7 +32,7 @@ let bossObj;
 @Event {
 	alternative(GetEventType())
 	case (EV_REQUEST_LIFE()) {
-		SetScriptResult(500);
+		SetScriptResult(1800);
 	}
 	
 	case(EV_REQUEST_TIMER()) {
@@ -45,7 +45,8 @@ let bossObj;
 }
 
 @Finalize {
-	
+	RemoveSound(atk1SE);
+	RemoveSound(atk2SE);
 }
 
 // ===== Functions =====

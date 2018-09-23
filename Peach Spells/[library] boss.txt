@@ -143,6 +143,7 @@ task TEnd {
 	}
 	
 	TExplosionA(bossX, bossY, 10, 0.6);
+	spellActive = false;
 	Obj_Delete(bossObj);
 	DeleteShotAll(TYPE_ALL, TYPE_ITEM);
 	

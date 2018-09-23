@@ -29,7 +29,7 @@ let atkSE = scriptDir ~ "se_tan00.wav";
 @Event {
 	alternative(GetEventType())
 	case (EV_REQUEST_LIFE) {
-		SetScriptResult(800);
+		SetScriptResult(1500);
 	}
 	
 	case (EV_REQUEST_TIMER) {
@@ -38,7 +38,7 @@ let atkSE = scriptDir ~ "se_tan00.wav";
 }
 
 @Finalize {
-	
+	RemoveSound(atkSE);
 }
 
 // ===== Functions ======
