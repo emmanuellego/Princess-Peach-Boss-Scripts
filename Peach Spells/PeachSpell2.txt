@@ -10,27 +10,36 @@
 let isLeft = true; // returns true if peach is facing left
 
 let atk1SE = scriptDir ~ "se_kira00.wav";
+let atk2SE = scriptDir ~ "se_tan01.wav";
+let charge1SE = scriptDir ~ "se_ch02.wav";
+let charge2SE = scriptDir ~ "se_ch00.wav";
+
+let count = 0;
+let limit = 5;
 
 @Initialize {
 	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
 	ObjEnemy_Regist(bossObj);
-	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() / 2, 70, 60);
+	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() - 9, 70, 60);
 	
 	TRenderBoss;
-	TCutIn("temp");
-	TArrowheadLoop;
+	TCutIn("Royal Sign \"High Royalty\"");
+	TFiringLoop;
 	TMovement;
 	TEnd;
 }
 
 @Loading {
 	LoadSound(atk1SE);
+	LoadSound(atk2SE);
+	LoadSound(charge1SE);
+	LoadSound(charge2SE);
 }
 
 @Event {
 	alternative(GetEventType())
 	case (EV_REQUEST_LIFE()) {
-		SetScriptResult(1800);
+		SetScriptResult(2000);
 	}
 	
 	case (EV_REQUEST_TIMER()) {
@@ -44,6 +53,9 @@ let atk1SE = scriptDir ~ "se_kira00.wav";
 
 @Finalize {
 	RemoveSound(atk1SE);
+	RemoveSound(atk2SE);
+	RemoveSound(charge1SE);
+	RemoveSound(charge2SE);
 }
 
 // ===== Functions =====
@@ -53,40 +65,81 @@ let atk1SE = scriptDir ~ "se_kira00.wav";
 task TMovement {
 	wait(120);
 	while (!Obj_IsDeleted(bossObj)) {
-		if (bossX <= 10 && isLeft) { isLeft = false; }
-		else if (bossX >= GetStgFrameWidth() - 10 && !isLeft) { isLeft = true; }
+		if (count < limit) {
+			if (bossX <= 10 && isLeft) { 
+				isLeft = false; 
+				count++;
+			}
+			else if (bossX >= GetStgFrameWidth() - 10 && !isLeft) { 
+				isLeft = true; 
+				count++;
+			}
+			
+			if (isLeft) { ObjMove_SetDestAtSpeed(bossObj, 10, 70, 2.75); }
+			else { ObjMove_SetDestAtSpeed(bossObj, GetStgFrameWidth() - 10, 70, 2.75); }
+		}
 		
-		if (isLeft) { ObjMove_SetDestAtSpeed(bossObj, 10, bossY, 1); }
-		else { ObjMove_SetDestAtSpeed(bossObj, GetStgFrameWidth() - 10, bossY, 1); }
+		else if (count >= limit) {
+			ObjMove_SetDestAtSpeed(bossObj, GetStgFrameWidth() / 2, 110, 6);
+		}
 		yield;
 	}
 }
 
-task TArrowheadLoop {
-	wait(130);
-	let arr = [271, 283, 282, 279, 275, 272]; // Calls Murasa bullet colors R-O-Y-G-B-V
+task TFiringLoop {
+	let arr = [270, 283, 281, 278, 274, 273]; // Calls Murasa bullet colors R-O-Y-G-B-V
 	let i = 0;
+	
+	wait(130);
 	while(!Obj_IsDeleted(bossObj)) {
-		if (i < length(arr)) { 
-			TArrowheadFire(arr[i]);
-			PlaySE(atk1SE);
-			i++; 
+		if (count < limit) {
+			if (i < length(arr)) { 
+				TSlowAccelFire(90, 120, arr[i]);
+				TSlowAccelFire(270, 120, arr[i]);
+				PlaySE(atk1SE);
+				i++; 
+			}
+			else { 
+				i = 0; 
+				TSlowAccelFire(90, 120, arr[i]);
+				TSlowAccelFire(270, 120, arr[i]);
+				PlaySE(atk1SE);
+			}
+			wait(3);
 		}
-		else { 
-			i = 0; 
-			TArrowheadFire(arr[i]);
-			PlaySE(atk1SE);
+		
+		else if (count >= limit) {
+			wait (60);
+			PlaySE(charge1SE);
+			wait(60);
+			loop(5) {
+				TAngledRingFire(0, 0.5, 2.75, 384, true);
+				PlaySE(atk2SE);
+				wait(20);
+				TAngledRingFire(90, -0.5, 2.75, 386, false);
+				PlaySE(atk2SE);
+				wait(20);
+			}
+			PlaySE(charge2SE);
+			wait(90);
+			count = 0;
 		}
-		wait(3);
 		yield;
 	}
 }
 
-task TArrowheadFire (id) {
-	CreateShotA2(rand(bossX - 10, bossX + 10), bossY, 0.5, 90, 0.05, 10, id, 2);
+task TAngledRingFire (angle, angleV, maxSpeed, id, isPos) {
+	let obj;
+	loop (15) {
+		if (isPos) { obj = CreateShotA2(bossX + cos(angle), bossY + sin(angle), 1, angle, 0.1, maxSpeed, id, 3); }
+		else { obj = CreateShotA2(bossX + cos(angle), bossY + sin(angle), 1, -angle, 0.1, maxSpeed, id, 3); }
+		ObjMove_SetAngularVelocity(obj, angleV);
+		
+		angle += 360/15;
+	}
 }
 
-task TWallBounceShots (angle, id) {
-	let obj;
-	obj = CreateShotA1(bossX + cos(angle), bossY + sin(angle), 4, angle,  
+task TSlowAccelFire (angle, frameDelay, id) {
+	let obj = CreateShotA1(rand(bossX - 10, bossX + 10), bossY + 20, 0.2, angle, id, 2);
+	ObjMove_AddPatternA2(obj, frameDelay, NO_CHANGE, NO_CHANGE, 0.05, 0, 10);
 }

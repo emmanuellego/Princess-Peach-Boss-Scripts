@@ -69,7 +69,7 @@ task TCircleLoop {
 	let cx = GetStgFrameWidth() / 2;
 	wait(120);
 	while(ObjEnemy_GetInfo(bossObj, INFO_LIFE) > 0) {
-		wait(80);
+		wait(120);
 		TIceShot(0, -0.1, -1, 1);
 		PlaySE(atk2SE);
 		wait(8);
@@ -79,7 +79,7 @@ task TCircleLoop {
 		TIceShot(90, -0.1, -1, 5);
 		PlaySE(atk2SE);
 		wait(8);
-		TIceShot(135, -0.1, -1, 5);
+		TIceShot(90, -0.1, -1, 7);
 		PlaySE(atk2SE);
 		wait(8);
 		ObjMove_SetDestAtSpeed(bossObj, rand(cx - 30, cx + 30), rand(60, 120), 2);

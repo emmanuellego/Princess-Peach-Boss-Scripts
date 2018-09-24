@@ -10,6 +10,7 @@ let bgmObj;
 let bgmSound = scriptDir ~ "/Peach Spells/bgm.ogg";
 
 @Initialize {
+	SetPlayerLife(4);
 	TPlural;
 }
 
@@ -42,6 +43,7 @@ task TPlural {
 	ObjEnemyBossScene_Add(obj, 0, dir ~ "Peach Spells/PeachBasic1.txt");
 	ObjEnemyBossScene_Add(obj, 0, dir ~ "Peach Spells/PeachSpell1.txt");
 	ObjEnemyBossScene_Add(obj, 1, dir ~ "Peach Spells/PeachBasic2.txt");
+	ObjEnemyBossScene_Add(obj, 1, dir ~ "Peach Spells/PeachSpell2.txt");
 	ObjEnemyBossScene_LoadInThread(obj);
 	ObjEnemyBossScene_Regist(obj);
 	
