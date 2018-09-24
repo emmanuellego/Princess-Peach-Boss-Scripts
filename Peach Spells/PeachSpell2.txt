@@ -1,0 +1,92 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Peach Spell Card 2"]
+#Text["TESTING SPELL PATTERN 2"]
+#Background["script/Peach/Peach Background.txt"]
+
+#include "./[library] boss.txt"
+#include "../ZUNShot/ZUNShot_Const.txt"
+
+let isLeft = true; // returns true if peach is facing left
+
+let atk1SE = scriptDir ~ "se_kira00.wav";
+
+@Initialize {
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() / 2, 70, 60);
+	
+	TRenderBoss;
+	TCutIn("temp");
+	TArrowheadLoop;
+	TMovement;
+	TEnd;
+}
+
+@Loading {
+	LoadSound(atk1SE);
+}
+
+@Event {
+	alternative(GetEventType())
+	case (EV_REQUEST_LIFE()) {
+		SetScriptResult(1800);
+	}
+	
+	case (EV_REQUEST_TIMER()) {
+		SetScriptResult(60);
+	}
+	
+	case (EV_REQUEST_SPELL_SCORE()) {
+		SetScriptResult(3000000);
+	}
+}
+
+@Finalize {
+	RemoveSound(atk1SE);
+}
+
+// ===== Functions =====
+
+// ===== Tasks =====
+
+task TMovement {
+	wait(120);
+	while (!Obj_IsDeleted(bossObj)) {
+		if (bossX <= 10 && isLeft) { isLeft = false; }
+		else if (bossX >= GetStgFrameWidth() - 10 && !isLeft) { isLeft = true; }
+		
+		if (isLeft) { ObjMove_SetDestAtSpeed(bossObj, 10, bossY, 1); }
+		else { ObjMove_SetDestAtSpeed(bossObj, GetStgFrameWidth() - 10, bossY, 1); }
+		yield;
+	}
+}
+
+task TArrowheadLoop {
+	wait(130);
+	let arr = [271, 283, 282, 279, 275, 272]; // Calls Murasa bullet colors R-O-Y-G-B-V
+	let i = 0;
+	while(!Obj_IsDeleted(bossObj)) {
+		if (i < length(arr)) { 
+			TArrowheadFire(arr[i]);
+			PlaySE(atk1SE);
+			i++; 
+		}
+		else { 
+			i = 0; 
+			TArrowheadFire(arr[i]);
+			PlaySE(atk1SE);
+		}
+		wait(3);
+		yield;
+	}
+}
+
+task TArrowheadFire (id) {
+	CreateShotA2(rand(bossX - 10, bossX + 10), bossY, 0.5, 90, 0.05, 10, id, 2);
+}
+
+task TWallBounceShots (angle, id) {
+	let obj;
+	obj = CreateShotA1(bossX + cos(angle), bossY + sin(angle), 4, angle,  
+}

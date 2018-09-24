@@ -1,6 +1,7 @@
 #include "script/Cutin/Cutin.txt"
 #include "script/default_system/Default_Effect.txt"
 
+let bossObj;
 let scriptDir = GetCurrentScriptDirectory;
 let cut = scriptDir ~ "Peach Cutin.png";
 let objScene = GetEnemyBossSceneObjectID();
@@ -126,13 +127,13 @@ task TSpellBackground {
 	}
 }
 
-task TCutIn {
+task TCutIn (spellname){
 	wait(80);
 	spellActive = true;
 	LoadSound(spellStartSE);
 	PlaySE(spellStartSE);
 	TSpellBackground;
-	ObjCutin_SetSpellcardS4("Love Sign \"Raining Love\"", cut, BYAKUREN, 249, 134, 237);
+	ObjCutin_SetSpellcardS4(spellname, cut, BYAKUREN, 249, 134, 237);
 	ObjCutin_LaunchS3(BYAKUREN, cut, "Normal");
 	//cutin(BYAKUREN, cut, 0, 0, 571, 778);
 }

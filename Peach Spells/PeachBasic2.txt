@@ -7,7 +7,6 @@
 #include "../ZUNShot/ZUNShot_Const.txt"
 #include "./[library] boss.txt"
 
-let bossObj;
 let atkSE = scriptDir ~ "se_tan00.wav";
 
 @Initialize {

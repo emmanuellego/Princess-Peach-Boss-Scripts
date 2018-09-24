@@ -4,13 +4,11 @@
 #Text["TESTING SPELL PATTERN 1"]
 #Background["script/Peach/Peach Background.txt"]
 
-#include "/script/Peach/ZUNShot/ZUNShot_Const.txt"
+#include "../ZUNShot/ZUNShot_Const.txt"
 #include "./[library] boss.txt"
 
 let atk1SE = scriptDir ~ "se_tan02.wav"; // Calls sound effect for raining hearts
 let atk2SE = scriptDir ~ "se_kira00.wav"; // Calls sound effect for circles
-
-let bossObj;
 
 @Initialize {
 	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
@@ -18,7 +16,7 @@ let bossObj;
 	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() / 2, 120, 60);
 	
 	TRenderBoss;
-	TCutIn;
+	TCutIn("Love Sign \"Raining Love\"");
 	TRainLoop;
 	TCircleLoop;
 	TEnd;

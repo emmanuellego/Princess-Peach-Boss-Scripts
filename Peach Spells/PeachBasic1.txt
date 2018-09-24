@@ -11,8 +11,6 @@
 
 let se = scriptDir ~ "se_tan00.wav";
 
-let bossObj;
-
 // Instead of using the default bullets, I will use a custom bullet.
 
 @Initialize {
