@@ -64,7 +64,7 @@ task TFireBarrageRed {
 			PlaySE(atkSE);
 			angle += 45;
 			delay += 1;
-			wait(10);
+			wait(13);
 		}
 	}
 }
@@ -79,7 +79,7 @@ task TFireBarrageBlue {
 			TFire(2, angle, 96, 1);
 			angle -= 45;
 			delay += 2;
-			wait(10);
+			wait(13);
 		}
 	}
 }

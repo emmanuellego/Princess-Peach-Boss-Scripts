@@ -1,0 +1,147 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Peach Spell Card 3"]
+#Text["TESTING SPELL PATTERN 3"]
+#Background["script/Peach/Peach Background.txt"]
+
+#include "./[library] boss.txt"
+#include "../ZUNShot/ZUNShot_Const.txt"
+
+let atk1SE = scriptDir ~ "se_tan00.wav";
+let atk2SE = scriptDir~ "se_tan02.wav";
+let charge1SE = scriptDir ~ "se_ch02.wav";
+
+@Initialize {
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() / 2, GetStgFrameHeight() / 2, 60);
+	
+	TRenderBoss;
+	TCutIn("Love Sign \"The Four Vibes\"");
+	TFiringLoop;
+	TEnd;
+}
+
+@Loading {
+	LoadSound(atk1SE);
+	LoadSound(atk2SE);
+	LoadSound(charge1SE);
+}
+
+@Event {
+	alternative(GetEventType())
+	case (EV_REQUEST_LIFE) {
+		SetScriptResult(2500);
+	}
+	
+	case (EV_REQUEST_TIMER) {
+		SetScriptResult(60);
+	}
+	
+	case (EV_REQUEST_SPELL_SCORE) {
+		SetScriptResult(30000000);
+	}
+}
+
+@Finalize {
+	RemoveSound(atk1SE);
+	RemoveSound(atk2SE);
+	RemoveSound(charge1SE);
+}
+
+// ===== Functions =====
+
+/* Fires a shot at a directed angle and location.
+@param speed: speed of the bullet
+@param angle: angle in which the bullet will be fired
+@param id: bullet id
+@return Object
+*/
+function fireSlowShot (speed, angle, id) {
+	let obj = CreateShotA1(bossX, bossY, speed, angle, id, 3);
+	return obj;
+}
+// ===== Tasks ======
+
+/* Handles firing loop
+*/
+task TFiringLoop {
+	/* Array of IDs for colors and angle placements
+	* @item 0: Yellow Heart (Joy)
+	* @item 1: Red Heart (Anger)
+	* @item 2: Blue Heart (Sadness)
+	* @item 3: Green Heart (Calm)
+	*/
+	let heartColors = [389, 384, 386, 388];
+	let pelletColors = [104, 92, 96, 100];
+	let angles = [225, 315, 135, 45];
+	
+	/* Array of shot objects
+	*/
+	let hearts = [];
+	
+	wait (120);
+	PlaySE(charge1SE);
+	wait(60);
+	TExtendedRings (4, 1.4, 90);
+	ascent (i in 0 .. 4) {
+		let temp = [fireSlowShot(3, angles[i], heartColors[i])];
+		hearts = hearts ~ temp;
+		PlaySE(atk1SE);
+		wait(10);
+	}
+	
+	let counter = 0;
+	ascent (i in 0 .. length(hearts)) {
+		ObjMove_AddPatternA2(hearts[i], 20 + counter, 0, NO_CHANGE, 0, 0.5, 0);
+		counter += 10;
+	}
+	
+	wait(128);
+	while (!Obj_IsDeleted(bossObj)) {
+		loop { 
+			THeartFires(hearts[0], 231);
+			THeartFires(hearts[1], 219);
+			THeartFires(hearts[2], 223);
+			THeartFires(hearts[3], 227);
+			PlaySE(atk2SE);
+			wait(17);
+		}
+		yield;
+	}
+}
+
+task TExtendedRings (rings, speed, angle) {
+	let obj;
+	let bulletColors = [389, 384, 386, 388];
+	let count = 0;
+	loop (rings) {
+		loop (30) {
+			obj = CreateShotA1(bossX + cos(angle), bossY + sin(angle), speed, angle, bulletColors[(length(bulletColors) - 1) - count], 3);
+			if (count % 2 == 0) { ObjMove_SetAngularVelocity(obj, 0.5); }
+			else { ObjMove_SetAngularVelocity(obj, -0.5);}
+			
+			angle += 360/30;
+		}
+		speed += 0.3;
+		if (count % 2 == 0) { angle += 180; }
+		else { angle -= 180; }
+		count++;
+	}
+}
+
+/* Handles bullets firing from hearts
+*/
+task THeartFires (obj, id) {
+	let ox = ObjRender_GetX(obj);
+	let oy = ObjRender_GetY(obj);
+	let oangle;
+	loop (30) {
+		oangle = ObjMove_GetAngle(obj);
+		CreateShotA1(ox, oy, 1.5, oangle, id, 2);
+		CreateShotA1(ox, oy, 1.5, oangle + 90, id, 2);
+		CreateShotA1(ox, oy, 1.5, oangle + 180, id, 2);
+		CreateShotA1(ox, oy, 1.5, oangle + 270, id, 2);
+		//wait(20);
+	}
+}

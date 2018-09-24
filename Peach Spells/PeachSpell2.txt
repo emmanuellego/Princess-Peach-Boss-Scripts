@@ -62,6 +62,10 @@ let limit = 5;
 
 // ===== Tasks =====
 
+/* Task loop that handles boss movement
+*  Peach moves from border to border until count >= limit,
+*  where Peach will move herself to the center until count = 0 again.
+*/
 task TMovement {
 	wait(120);
 	while (!Obj_IsDeleted(bossObj)) {
@@ -86,6 +90,10 @@ task TMovement {
 	}
 }
 
+/* Task loop that handles the patterns
+*  Spawns a constant stream of bullets that fires upwards and downwards
+*  until count >= limit, where Peach will then fire hearts from the center.
+*/
 task TFiringLoop {
 	let arr = [270, 283, 281, 278, 274, 273]; // Calls Murasa bullet colors R-O-Y-G-B-V
 	let i = 0;
@@ -128,6 +136,14 @@ task TFiringLoop {
 	}
 }
 
+/* Creates a ring of bullets that starts slow and accelerates and has an angular velocity.
+
+@param angle: Starting angle of the circle
+@param angleV: Angular velocity of a single bullet
+@param maxSpeed: Maximum speed of the bullet after accelerating
+@param id: Bullet graphic
+@param isPos: Boolean to see if the angle will be positive or negative
+*/
 task TAngledRingFire (angle, angleV, maxSpeed, id, isPos) {
 	let obj;
 	loop (15) {
@@ -139,6 +155,12 @@ task TAngledRingFire (angle, angleV, maxSpeed, id, isPos) {
 	}
 }
 
+/* Spawns a bullet from Peach that starts slow and rapidly accelerates after a set amount of frames.
+
+@param angle: Angle of the bullet
+@param frameDelay: Frames before the bullet rapidly accelerates
+@param id: Bullet graphic
+*/
 task TSlowAccelFire (angle, frameDelay, id) {
 	let obj = CreateShotA1(rand(bossX - 10, bossX + 10), bossY + 20, 0.2, angle, id, 2);
 	ObjMove_AddPatternA2(obj, frameDelay, NO_CHANGE, NO_CHANGE, 0.05, 0, 10);
