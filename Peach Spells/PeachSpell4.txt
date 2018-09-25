@@ -1,0 +1,75 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Peach Curvy Lasers"]
+#Text["CURVY LASER TESTING"]
+#Background["script/Peach/Peach Background.txt"]
+
+#include "./[library] boss.txt"
+#include "../ZUNShot/ZUNShot_Const.txt"
+
+let atk1SE = scriptDir ~ "se_lazer00.wav";
+
+@Initialize {
+	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(bossObj);
+	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() / 2, 100, 60);
+	
+	TRenderBoss;
+	TFiringLoop;
+	TEnd;
+}
+
+@Loading {
+	LoadSound(atk1SE);
+}
+
+@Event {
+	alternative(GetEventType())
+	case (EV_REQUEST_LIFE()) {
+		SetScriptResult(1800);
+	}
+	
+	case (EV_REQUEST_TIMER()) {
+		SetScriptResult(60);
+	}
+}
+
+@Finalize {
+	RemoveSound(atk1SE);
+}
+
+// ===== Functions =====
+
+// ===== Tasks =====
+
+task TFiringLoop {
+	let x = 0;
+	while (!Obj_IsDeleted(bossObj)) {
+		wait(180);
+		loop (5) {
+			THeartLaser(270 - 15*x, 187, false);
+			THeartLaser(270 + 15*x, 187, true);
+			PlaySE(atk1SE);
+			x++;
+			wait(4);
+		}
+		x = 0;
+		wait(80);
+	}
+}
+
+/* Creates curved lasers to imitate hearts.
+* @param angle: starting angle of the laser
+* @param id: laser graphic
+* @param isPos: returns true if laser is moving positively, false if otherwise
+*/
+task THeartLaser(angle, id, isPos) {
+	let obj = CreateCurveLaserA1(bossX, bossY, 4, angle, 60, 18, id, 4);
+	if (isPos) { ObjMove_AddPatternA2(obj, 0, 6, angle, 0, 4, 5); }
+	else { ObjMove_AddPatternA2(obj, 0, 6, angle, 0, -4, 5); }
+	ObjMove_AddPatternA2(obj, 45, NO_CHANGE, NO_CHANGE, -0.2, 0, 5);
+}
+
+task TSpiralBullets(angle, id) {
+	// WIP
+}
