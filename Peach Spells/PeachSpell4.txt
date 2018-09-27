@@ -1,13 +1,15 @@
 #TouhouDanmakufu[Single]
 #ScriptVersion[3]
-#Title["Peach Curvy Lasers"]
-#Text["CURVY LASER TESTING"]
+#Title["Peach Spell Card 4"]
+#Text["TESTING SPELL CARD 4"]
 #Background["script/Peach/Peach Background.txt"]
 
 #include "./[library] boss.txt"
 #include "../ZUNShot/ZUNShot_Const.txt"
 
 let atk1SE = scriptDir ~ "se_lazer00.wav";
+let atk2SE = scriptDir ~ "se_tan00.wav";
+let atk3SE = scriptDir ~ "se_kira00.wav";
 
 @Initialize {
 	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
@@ -15,12 +17,15 @@ let atk1SE = scriptDir ~ "se_lazer00.wav";
 	ObjMove_SetDestAtFrame(bossObj, GetStgFrameWidth() / 2, 100, 60);
 	
 	TRenderBoss;
+	TCutIn("Love Sign \"Vibe Overload\"");
 	TFiringLoop;
 	TEnd;
 }
 
 @Loading {
 	LoadSound(atk1SE);
+	LoadSound(atk2SE);
+	LoadSound(atk3SE);
 }
 
 @Event {
@@ -36,25 +41,42 @@ let atk1SE = scriptDir ~ "se_lazer00.wav";
 
 @Finalize {
 	RemoveSound(atk1SE);
+	RemoveSound(atk2SE);
+	LoadSound(atk3SE);
 }
 
 // ===== Functions =====
 
 // ===== Tasks =====
 
+/* Handles the primary firing loop.
+*/
 task TFiringLoop {
 	let x = 0;
+	let i = 0;
+	wait(180);
 	while (!Obj_IsDeleted(bossObj)) {
-		wait(180);
-		loop (5) {
-			THeartLaser(270 - 15*x, 187, false);
-			THeartLaser(270 + 15*x, 187, true);
+		loop (8) {
+			THeartLaser(275 - 9*x, 187, false);
+			THeartLaser(265 + 9*x, 187, true);
 			PlaySE(atk1SE);
 			x++;
 			wait(4);
 		}
 		x = 0;
+		wait(60);
+		TSpiralBullets(30, 90, 384, true);
+		TSpiralBullets(30, 270, 389, true);
+		wait(60);
+		TSpiralBullets(30, 180, 386, false);
+		TSpiralBullets(30, 0, 388, false);
 		wait(80);
+		TSpiralBullets(50, 90, 389, true);
+		TSpiralBullets(50, 270, 386, true);
+		TSpiralBullets(50, 180, 384, true);
+		TSpiralBullets(50, 0, 388, true);
+		wait(130);
+		
 	}
 }
 
@@ -70,6 +92,19 @@ task THeartLaser(angle, id, isPos) {
 	ObjMove_AddPatternA2(obj, 45, NO_CHANGE, NO_CHANGE, -0.2, 0, 5);
 }
 
-task TSpiralBullets(angle, id) {
-	// WIP
+/* Creates a spiral of bullets.
+* @param loopNum: amount of times the loop goes through
+* @param angle: Starting angle of the bullet spawning.
+* @param id: bullet graphic
+* @param isPos: true if bullets spawn counterclockwise, false if otherwise
+*/
+task TSpiralBullets(loopNum, angle, id, isPos) {
+	let obj;
+	loop (loopNum) {
+		obj = CreateShotA2(bossX + cos(angle), bossY + sin(angle), 15, angle, -0.7, 2, id, 1);
+		PlaySE(atk2SE);
+		if (isPos) { angle += 360/loopNum; }
+		else { angle -= 360/loopNum; }
+		wait(2);
+	}
 }

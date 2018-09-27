@@ -45,6 +45,7 @@ task TPlural {
 	ObjEnemyBossScene_Add(obj, 1, dir ~ "Peach Spells/PeachBasic2.txt");
 	ObjEnemyBossScene_Add(obj, 1, dir ~ "Peach Spells/PeachSpell2.txt");
 	ObjEnemyBossScene_Add(obj, 1, dir ~ "Peach Spells/PeachSpell3.txt");
+	ObjEnemyBossScene_Add(obj, 2, dir ~ "Peach Spells/PeachSpell4.txt");
 	ObjEnemyBossScene_LoadInThread(obj);
 	ObjEnemyBossScene_Regist(obj);
 	

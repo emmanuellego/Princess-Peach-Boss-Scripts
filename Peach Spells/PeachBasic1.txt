@@ -3,15 +3,11 @@
 #Title["Peach Basic Pattern 1"]
 #Text["TESTING BASIC PATTERN 1"]
 #Background["script/Peach/Peach Background.txt"]
-// REMOVE HEADER ONCE DONE TESTING
-// A simple basic spell card by Peach utilizing ? and ? to get the player comfortable.
 
 #include "../ZUNShot/ZUNShot_Const.txt"
 #include "./[library] boss.txt"
 
 let se = scriptDir ~ "se_tan00.wav";
-
-// Instead of using the default bullets, I will use a custom bullet.
 
 @Initialize {
 	bossObj = ObjEnemy_Create(OBJ_ENEMY_BOSS);
